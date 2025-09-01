@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserPlus, ArrowLeft, Plus, X } from "lucide-react"
+import { UserPlus, ArrowLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 interface Designation {
@@ -40,11 +40,18 @@ export default function CreateUserPage() {
     email: "",
     phone: "",
     designation: "",
-    assignments: [] as OrganizationalAssignment[],
+    assignment: {
+      organizationId: "",
+      organizationName: "",
+      companyIds: [] as string[],
+      departmentIds: [] as string[],
+      divisionIds: [] as string[],
+      sectionIds: [] as string[],
+      subsectionIds: [] as string[],
+    } as OrganizationalAssignment,
     status: "active" as "active" | "inactive",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [currentAssignment, setCurrentAssignment] = useState<Partial<OrganizationalAssignment>>({})
   const router = useRouter()
 
   useEffect(() => {
@@ -97,38 +104,13 @@ export default function CreateUserPage() {
     }))
   }
 
-  const addAssignment = () => {
-    if (currentAssignment.organizationId && currentAssignment.organizationName) {
-      const newAssignment: OrganizationalAssignment = {
-        organizationId: currentAssignment.organizationId,
-        organizationName: currentAssignment.organizationName,
-        companyIds: currentAssignment.companyIds || [],
-        departmentIds: currentAssignment.departmentIds || [],
-        divisionIds: currentAssignment.divisionIds || [],
-        sectionIds: currentAssignment.sectionIds || [],
-        subsectionIds: currentAssignment.subsectionIds || [],
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        assignments: [...prev.assignments, newAssignment],
-      }))
-
-      setCurrentAssignment({})
-    }
-  }
-
-  const removeAssignment = (index: number) => {
+  const handleAssignmentChange = (field: keyof OrganizationalAssignment, value: string | string[]) => {
     setFormData((prev) => ({
       ...prev,
-      assignments: prev.assignments.filter((_, i) => i !== index),
-    }))
-  }
-
-  const handleAssignmentChange = (field: keyof OrganizationalAssignment, value: string | string[]) => {
-    setCurrentAssignment((prev) => ({
-      ...prev,
-      [field]: value,
+      assignment: {
+        ...prev.assignment,
+        [field]: value,
+      },
     }))
   }
 
@@ -163,7 +145,9 @@ export default function CreateUserPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">New Employee</CardTitle>
-            <CardDescription>Add a new employee with multiple organizational assignments</CardDescription>
+            <CardDescription>
+              Add a new employee to a single organization with multiple internal assignments
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -265,183 +249,166 @@ export default function CreateUserPage() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-lg font-semibold">Organizational Assignments</Label>
+                  <Label className="text-lg font-semibold">Organizational Assignment</Label>
                   <p className="text-sm text-muted-foreground">
-                    Employee can be assigned to multiple organizational units
+                    Employee belongs to one organization with multiple internal assignments
                   </p>
                 </div>
 
-                {/* Current Assignments */}
-                {formData.assignments.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Current Assignments:</Label>
-                    <div className="space-y-2">
-                      {formData.assignments.map((assignment, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 border rounded-lg bg-muted/50"
-                        >
-                          <div className="flex-1">
-                            <p className="font-medium">{assignment.organizationName}</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {assignment.companyIds.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {assignment.companyIds.length} Companies
-                                </Badge>
-                              )}
-                              {assignment.departmentIds.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {assignment.departmentIds.length} Departments
-                                </Badge>
-                              )}
-                              {assignment.divisionIds.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {assignment.divisionIds.length} Divisions
-                                </Badge>
-                              )}
-                              {assignment.sectionIds.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {assignment.sectionIds.length} Sections
-                                </Badge>
-                              )}
-                              {assignment.subsectionIds.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {assignment.subsectionIds.length} Sub-sections
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <Button type="button" variant="ghost" size="sm" onClick={() => removeAssignment(index)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Add New Assignment */}
                 <div className="border rounded-lg p-4 space-y-4">
-                  <Label className="text-sm font-medium">Add New Assignment:</Label>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Organization *</Label>
-                      <Select
-                        onValueChange={(value) => {
-                          const org = organizations.find((o) => o.id === value)
-                          handleAssignmentChange("organizationId", value)
-                          handleAssignmentChange("organizationName", org?.name || "")
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select organization" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {organizations.map((org) => (
-                            <SelectItem key={org.id} value={org.id}>
-                              {org.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Companies (Multiple)</Label>
-                      <Input
-                        placeholder="Enter company IDs (comma-separated)"
-                        onChange={(e) =>
-                          handleAssignmentChange(
-                            "companyIds",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean),
-                          )
-                        }
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Organization *</Label>
+                    <Select
+                      onValueChange={(value) => {
+                        const org = organizations.find((o) => o.id === value)
+                        handleAssignmentChange("organizationId", value)
+                        handleAssignmentChange("organizationName", org?.name || "")
+                      }}
+                      value={formData.assignment.organizationId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select organization" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {organizations.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            {org.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Departments (Multiple)</Label>
-                      <Input
-                        placeholder="Enter department IDs (comma-separated)"
-                        onChange={(e) =>
-                          handleAssignmentChange(
-                            "departmentIds",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean),
-                          )
-                        }
-                      />
-                    </div>
+                  {formData.assignment.organizationId && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Companies (Multiple)</Label>
+                          <Input
+                            placeholder="Enter company IDs (comma-separated)"
+                            value={formData.assignment.companyIds.join(", ")}
+                            onChange={(e) =>
+                              handleAssignmentChange(
+                                "companyIds",
+                                e.target.value
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter(Boolean),
+                              )
+                            }
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label>Divisions (Multiple)</Label>
-                      <Input
-                        placeholder="Enter division IDs (comma-separated)"
-                        onChange={(e) =>
-                          handleAssignmentChange(
-                            "divisionIds",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean),
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
+                        <div className="space-y-2">
+                          <Label>Departments (Multiple)</Label>
+                          <Input
+                            placeholder="Enter department IDs (comma-separated)"
+                            value={formData.assignment.departmentIds.join(", ")}
+                            onChange={(e) =>
+                              handleAssignmentChange(
+                                "departmentIds",
+                                e.target.value
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter(Boolean),
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Sections (Multiple)</Label>
-                      <Input
-                        placeholder="Enter section IDs (comma-separated)"
-                        onChange={(e) =>
-                          handleAssignmentChange(
-                            "sectionIds",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean),
-                          )
-                        }
-                      />
-                    </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Divisions (Multiple)</Label>
+                          <Input
+                            placeholder="Enter division IDs (comma-separated)"
+                            value={formData.assignment.divisionIds.join(", ")}
+                            onChange={(e) =>
+                              handleAssignmentChange(
+                                "divisionIds",
+                                e.target.value
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter(Boolean),
+                              )
+                            }
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label>Sub-sections (Multiple)</Label>
-                      <Input
-                        placeholder="Enter sub-section IDs (comma-separated)"
-                        onChange={(e) =>
-                          handleAssignmentChange(
-                            "subsectionIds",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean),
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
+                        <div className="space-y-2">
+                          <Label>Sections (Multiple)</Label>
+                          <Input
+                            placeholder="Enter section IDs (comma-separated)"
+                            value={formData.assignment.sectionIds.join(", ")}
+                            onChange={(e) =>
+                              handleAssignmentChange(
+                                "sectionIds",
+                                e.target.value
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter(Boolean),
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addAssignment}
-                    disabled={!currentAssignment.organizationId}
-                    className="w-full bg-transparent"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Assignment
-                  </Button>
+                      <div className="space-y-2">
+                        <Label>Sub-sections (Multiple)</Label>
+                        <Input
+                          placeholder="Enter sub-section IDs (comma-separated)"
+                          value={formData.assignment.subsectionIds.join(", ")}
+                          onChange={(e) =>
+                            handleAssignmentChange(
+                              "subsectionIds",
+                              e.target.value
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                            )
+                          }
+                        />
+                      </div>
+
+                      {/* Assignment Summary */}
+                      {(formData.assignment.companyIds.length > 0 ||
+                        formData.assignment.departmentIds.length > 0 ||
+                        formData.assignment.divisionIds.length > 0 ||
+                        formData.assignment.sectionIds.length > 0 ||
+                        formData.assignment.subsectionIds.length > 0) && (
+                        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                          <Label className="text-sm font-medium">Assignment Summary:</Label>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {formData.assignment.companyIds.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {formData.assignment.companyIds.length} Companies
+                              </Badge>
+                            )}
+                            {formData.assignment.departmentIds.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {formData.assignment.departmentIds.length} Departments
+                              </Badge>
+                            )}
+                            {formData.assignment.divisionIds.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {formData.assignment.divisionIds.length} Divisions
+                              </Badge>
+                            )}
+                            {formData.assignment.sectionIds.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {formData.assignment.sectionIds.length} Sections
+                              </Badge>
+                            )}
+                            {formData.assignment.subsectionIds.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {formData.assignment.subsectionIds.length} Sub-sections
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
