@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Building2, Users, MapPin, Briefcase, UserPlus } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { ColorPalette } from "@/components/color-palette"
 
 export default function DashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -76,6 +77,7 @@ export default function DashboardPage() {
               <h1 className="text-xl font-bold text-foreground">HRM System</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <ColorPalette />
               <ThemeToggle />
               <span className="text-sm text-muted-foreground">Welcome, {adminEmail}</span>
               <Button variant="outline" onClick={handleLogout}>
