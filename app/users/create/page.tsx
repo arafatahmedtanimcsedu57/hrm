@@ -24,6 +24,7 @@ interface OrganizationalAssignment {
   organizationId: string
   organizationName: string
   companyIds: string[]
+  branchIds: string[] // Added branchIds field to assignment interface
   departmentIds: string[]
   divisionIds: string[]
   sectionIds: string[]
@@ -45,6 +46,7 @@ export default function CreateUserPage() {
       organizationId: "",
       organizationName: "",
       companyIds: [] as string[],
+      branchIds: [] as string[], // Added branchIds to form data
       departmentIds: [] as string[],
       divisionIds: [] as string[],
       sectionIds: [] as string[],
@@ -141,18 +143,29 @@ export default function CreateUserPage() {
     return companies
   }
 
-  const getAvailableDepartments = () => {
+  const getAvailableBranches = () => {
     if (!formData.assignment.organizationId || formData.assignment.companyIds.length === 0) {
       return []
     }
 
-    const departments: any[] = []
+    const branches: any[] = []
     formData.assignment.companyIds.forEach((companyId) => {
       const companyBranches = organizationalData[formData.assignment.organizationId].branches[companyId] || []
-      companyBranches.forEach((branch: any) => {
-        const branchDepartments = organizationalData[formData.assignment.organizationId].departments[branch.id] || []
-        departments.push(...branchDepartments)
-      })
+      branches.push(...companyBranches)
+    })
+
+    return branches.filter((branch, index, self) => index === self.findIndex((b) => b.id === branch.id))
+  }
+
+  const getAvailableDepartments = () => {
+    if (!formData.assignment.organizationId || formData.assignment.branchIds.length === 0) {
+      return []
+    }
+
+    const departments: any[] = []
+    formData.assignment.branchIds.forEach((branchId) => {
+      const branchDepartments = organizationalData[formData.assignment.organizationId].departments[branchId] || []
+      departments.push(...branchDepartments)
     })
 
     return departments.filter((dept, index, self) => index === self.findIndex((d) => d.id === dept.id))
@@ -206,11 +219,19 @@ export default function CreateUserPage() {
 
       if (field === "organizationId") {
         newAssignment.companyIds = []
+        newAssignment.branchIds = [] // Clear branchIds when organization changes
         newAssignment.departmentIds = []
         newAssignment.divisionIds = []
         newAssignment.sectionIds = []
         newAssignment.subsectionIds = []
       } else if (field === "companyIds") {
+        newAssignment.branchIds = [] // Clear branchIds when companies change
+        newAssignment.departmentIds = []
+        newAssignment.divisionIds = []
+        newAssignment.sectionIds = []
+        newAssignment.subsectionIds = []
+      } else if (field === "branchIds") {
+        // Added branchIds handling
         newAssignment.departmentIds = []
         newAssignment.divisionIds = []
         newAssignment.sectionIds = []
@@ -484,36 +505,71 @@ export default function CreateUserPage() {
                         </div>
 
                         {formData.assignment.companyIds.length > 0 && (
-                          <div className="space-y-2">
-                            <Label>Departments (Multiple)</Label>
-                            <Select onValueChange={(value) => addToSelection("departmentIds", value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select departments" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {getAvailableDepartments()
-                                  .filter((dept) => !formData.assignment.departmentIds.includes(dept.id))
-                                  .map((dept) => (
-                                    <SelectItem key={dept.id} value={dept.id}>
-                                      {dept.name}
-                                    </SelectItem>
+                          <>
+                            <div className="space-y-2">
+                              <Label>Branches (Multiple)</Label>
+                              <Select onValueChange={(value) => addToSelection("branchIds", value)}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select branches" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {getAvailableBranches()
+                                    .filter((branch) => !formData.assignment.branchIds.includes(branch.id))
+                                    .map((branch) => (
+                                      <SelectItem key={branch.id} value={branch.id}>
+                                        {branch.name}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                              {formData.assignment.branchIds.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {formData.assignment.branchIds.map((branchId) => (
+                                    <Badge key={branchId} variant="secondary" className="text-xs">
+                                      {getSelectedItemName(getAvailableBranches(), branchId)}
+                                      <X
+                                        className="h-3 w-3 ml-1 cursor-pointer"
+                                        onClick={() => removeFromSelection("branchIds", branchId)}
+                                      />
+                                    </Badge>
                                   ))}
-                              </SelectContent>
-                            </Select>
-                            {formData.assignment.departmentIds.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {formData.assignment.departmentIds.map((deptId) => (
-                                  <Badge key={deptId} variant="secondary" className="text-xs">
-                                    {getSelectedItemName(getAvailableDepartments(), deptId)}
-                                    <X
-                                      className="h-3 w-3 ml-1 cursor-pointer"
-                                      onClick={() => removeFromSelection("departmentIds", deptId)}
-                                    />
-                                  </Badge>
-                                ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {formData.assignment.branchIds.length > 0 && (
+                              <div className="space-y-2">
+                                <Label>Departments (Multiple)</Label>
+                                <Select onValueChange={(value) => addToSelection("departmentIds", value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select departments" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {getAvailableDepartments()
+                                      .filter((dept) => !formData.assignment.departmentIds.includes(dept.id))
+                                      .map((dept) => (
+                                        <SelectItem key={dept.id} value={dept.id}>
+                                          {dept.name}
+                                        </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                                {formData.assignment.departmentIds.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {formData.assignment.departmentIds.map((deptId) => (
+                                      <Badge key={deptId} variant="secondary" className="text-xs">
+                                        {getSelectedItemName(getAvailableDepartments(), deptId)}
+                                        <X
+                                          className="h-3 w-3 ml-1 cursor-pointer"
+                                          onClick={() => removeFromSelection("departmentIds", deptId)}
+                                        />
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             )}
-                          </div>
+                          </>
                         )}
 
                         {formData.assignment.departmentIds.length > 0 && (
@@ -617,6 +673,7 @@ export default function CreateUserPage() {
                       </div>
 
                       {(formData.assignment.companyIds.length > 0 ||
+                        formData.assignment.branchIds.length > 0 || // Added branchIds to summary condition
                         formData.assignment.departmentIds.length > 0 ||
                         formData.assignment.divisionIds.length > 0 ||
                         formData.assignment.sectionIds.length > 0 ||
@@ -627,6 +684,11 @@ export default function CreateUserPage() {
                             {formData.assignment.companyIds.length > 0 && (
                               <Badge variant="secondary" className="text-xs">
                                 {formData.assignment.companyIds.length} Companies
+                              </Badge>
+                            )}
+                            {formData.assignment.branchIds.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {formData.assignment.branchIds.length} Branches
                               </Badge>
                             )}
                             {formData.assignment.departmentIds.length > 0 && (
