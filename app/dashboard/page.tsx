@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building2, Users, MapPin, Briefcase, UserPlus } from "lucide-react"
+import { Building2, Users, MapPin, Briefcase, UserPlus, TreePine } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ColorPalette } from "@/components/color-palette"
 
@@ -182,6 +182,24 @@ export default function DashboardPage() {
             <CardContent>
               <Button variant="outline" className="w-full bg-transparent" onClick={() => router.push("/organizations")}>
                 View Organizations
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TreePine className="h-5 w-5 text-primary" />
+                <span>Tree View</span>
+              </CardTitle>
+              <CardDescription>
+                View and manage your complete organizational hierarchy in an interactive tree structure with full CRUD
+                operations.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full bg-transparent" onClick={() => router.push("/tree-view")}>
+                Open Tree View
               </Button>
             </CardContent>
           </Card>
