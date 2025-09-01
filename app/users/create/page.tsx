@@ -68,18 +68,32 @@ export default function CreateUserPage() {
       setDesignations(storedDesignations)
 
       loadOrganizationalData()
+
+      console.log("[v0] All localStorage keys:", Object.keys(localStorage))
+      console.log(
+        "[v0] Keys containing 'hrm_companies':",
+        Object.keys(localStorage).filter((key) => key.includes("hrm_companies")),
+      )
     }
   }, [router])
 
   const loadOrganizationalData = () => {
+    console.log("[v0] Loading organizational data...")
     const data: any = {}
 
     const orgs = JSON.parse(localStorage.getItem("hrm_organizations") || "[]")
+    console.log("[v0] Found organizations:", orgs)
 
     orgs.forEach((org: any) => {
+      console.log("[v0] Processing organization:", org.name, org.id)
+
+      const companiesKey = `hrm_companies_${org.id}`
+      const companies = JSON.parse(localStorage.getItem(companiesKey) || "[]")
+      console.log("[v0] Companies key:", companiesKey, "Companies found:", companies)
+
       data[org.id] = {
         organization: org,
-        companies: JSON.parse(localStorage.getItem(`hrm_companies_${org.id}`) || "[]"),
+        companies: companies,
         branches: {},
         departments: {},
         divisions: {},
@@ -87,7 +101,7 @@ export default function CreateUserPage() {
         subsections: {},
       }
 
-      data[org.id].companies.forEach((company: any) => {
+      companies.forEach((company: any) => {
         const branches = JSON.parse(localStorage.getItem(`hrm_branches_${company.id}`) || "[]")
         data[org.id].branches[company.id] = branches
 
@@ -118,9 +132,13 @@ export default function CreateUserPage() {
 
   const getAvailableCompanies = () => {
     if (!formData.assignment.organizationId || !organizationalData[formData.assignment.organizationId]) {
+      console.log("[v0] No organization selected or no data for organization:", formData.assignment.organizationId)
       return []
     }
-    return organizationalData[formData.assignment.organizationId].companies || []
+
+    const companies = organizationalData[formData.assignment.organizationId].companies || []
+    console.log("[v0] Available companies for organization:", formData.assignment.organizationId, companies)
+    return companies
   }
 
   const getAvailableDepartments = () => {
