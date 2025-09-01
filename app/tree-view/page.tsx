@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
-import OrganizationTree from "@/components/organization-tree"
+import VisualOrganizationTree from "@/components/visual-organization-tree"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ColorPalette } from "@/components/color-palette"
 
@@ -54,7 +54,7 @@ export default function TreeViewPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <OrganizationTree onRefresh={() => window.location.reload()} />
+        <VisualOrganizationTree onRefresh={() => window.location.reload()} />
       </main>
     </div>
   )
