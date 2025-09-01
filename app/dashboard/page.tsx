@@ -151,7 +151,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -217,6 +217,23 @@ export default function DashboardPage() {
             <CardContent>
               <Button variant="outline" className="w-full bg-transparent" onClick={() => router.push("/users")}>
                 Manage Employees
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                <span>Designation Management</span>
+              </CardTitle>
+              <CardDescription>
+                Create and manage job designations, set hierarchy levels, and organize employee positions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full bg-transparent" onClick={() => router.push("/designations")}>
+                Manage Designations
               </Button>
             </CardContent>
           </Card>

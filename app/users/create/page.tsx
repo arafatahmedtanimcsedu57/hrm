@@ -11,9 +11,18 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { UserPlus, ArrowLeft } from "lucide-react"
 
+interface Designation {
+  id: string
+  name: string
+  description?: string
+  level: number
+  createdAt: string
+}
+
 export default function CreateUserPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [organizations, setOrganizations] = useState<any[]>([])
+  const [designations, setDesignations] = useState<Designation[]>([])
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -39,6 +48,9 @@ export default function CreateUserPage() {
       // Load organizations for assignment
       const storedOrgs = JSON.parse(localStorage.getItem("hrm_organizations") || "[]")
       setOrganizations(storedOrgs)
+
+      const storedDesignations = JSON.parse(localStorage.getItem("hrm_designations") || "[]")
+      setDesignations(storedDesignations)
     }
   }, [router])
 
@@ -173,11 +185,23 @@ export default function CreateUserPage() {
                       <SelectValue placeholder="Select designation" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Manager">Manager</SelectItem>
-                      <SelectItem value="Team Lead">Team Lead</SelectItem>
-                      <SelectItem value="Senior Employee">Senior Employee</SelectItem>
-                      <SelectItem value="Employee">Employee</SelectItem>
-                      <SelectItem value="Intern">Intern</SelectItem>
+                      {designations.length > 0 ? (
+                        designations
+                          .sort((a, b) => b.level - a.level) // Sort by level descending (highest first)
+                          .map((designation) => (
+                            <SelectItem key={designation.id} value={designation.name}>
+                              {designation.name} {designation.description && `- ${designation.description}`}
+                            </SelectItem>
+                          ))
+                      ) : (
+                        <>
+                          <SelectItem value="Manager">Manager</SelectItem>
+                          <SelectItem value="Team Lead">Team Lead</SelectItem>
+                          <SelectItem value="Senior Employee">Senior Employee</SelectItem>
+                          <SelectItem value="Employee">Employee</SelectItem>
+                          <SelectItem value="Intern">Intern</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
