@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@apollo/client": "latest",
+    "@apollo/client": "^4.0.3",
     "@apollo/server": "latest",
     "@as-integrations/next": "latest",
     "@hookform/resolvers": "^3.10.0",
