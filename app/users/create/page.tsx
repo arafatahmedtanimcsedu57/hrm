@@ -19,7 +19,7 @@ export default function CreateUserPage() {
     lastName: "",
     email: "",
     phone: "",
-    role: "",
+    position: "",
     department: "",
     organizationId: "",
     companyId: "",
@@ -167,10 +167,10 @@ export default function CreateUserPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role *</Label>
-                  <Select onValueChange={(value) => handleSelectChange("role", value)}>
+                  <Label htmlFor="position">Position *</Label>
+                  <Select onValueChange={(value) => handleSelectChange("position", value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder="Select position" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Manager">Manager</SelectItem>
