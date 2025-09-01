@@ -87,9 +87,8 @@ export default function CreateUserPage() {
     orgs.forEach((org: any) => {
       console.log("[v0] Processing organization:", org.name, org.id)
 
-      const companiesKey = `hrm_companies_${org.id}`
-      const companies = JSON.parse(localStorage.getItem(companiesKey) || "[]")
-      console.log("[v0] Companies key:", companiesKey, "Companies found:", companies)
+      const companies = org.companies || []
+      console.log("[v0] Companies from nested structure:", companies)
 
       data[org.id] = {
         organization: org,
@@ -102,23 +101,23 @@ export default function CreateUserPage() {
       }
 
       companies.forEach((company: any) => {
-        const branches = JSON.parse(localStorage.getItem(`hrm_branches_${company.id}`) || "[]")
+        const branches = company.branches || []
         data[org.id].branches[company.id] = branches
 
         branches.forEach((branch: any) => {
-          const departments = JSON.parse(localStorage.getItem(`hrm_departments_${branch.id}`) || "[]")
+          const departments = branch.departments || []
           data[org.id].departments[branch.id] = departments
 
           departments.forEach((dept: any) => {
-            const divisions = JSON.parse(localStorage.getItem(`hrm_divisions_${dept.id}`) || "[]")
+            const divisions = dept.divisions || []
             data[org.id].divisions[dept.id] = divisions
 
             divisions.forEach((division: any) => {
-              const sections = JSON.parse(localStorage.getItem(`hrm_sections_${division.id}`) || "[]")
+              const sections = division.sections || []
               data[org.id].sections[division.id] = sections
 
               sections.forEach((section: any) => {
-                const subsections = JSON.parse(localStorage.getItem(`hrm_subsections_${section.id}`) || "[]")
+                const subsections = section.subsections || []
                 data[org.id].subsections[section.id] = subsections
               })
             })
@@ -127,6 +126,7 @@ export default function CreateUserPage() {
       })
     })
 
+    console.log("[v0] Final organizational data structure:", data)
     setOrganizationalData(data)
   }
 
