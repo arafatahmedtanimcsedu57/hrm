@@ -208,7 +208,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <UserPlus className="h-5 w-5 text-primary" />
-                <span>User Management</span>
+                <span>Employee Management</span>
               </CardTitle>
               <CardDescription>
                 Add and manage employees, assign roles, and control access permissions across your organization.
@@ -216,7 +216,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full bg-transparent" onClick={() => router.push("/users")}>
-                Manage Users
+                Manage Employees
               </Button>
             </CardContent>
           </Card>
