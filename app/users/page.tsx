@@ -13,7 +13,7 @@ interface User {
   lastName: string
   email: string
   phone: string
-  position: string
+  designation: string // Changed from position to designation
   department: string
   status: "active" | "inactive"
   createdAt: string
@@ -110,7 +110,7 @@ export default function UsersPage() {
                       </span>
                       <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>
                     </CardTitle>
-                    <CardDescription>{user.position}</CardDescription>
+                    <CardDescription>{user.designation}</CardDescription> {/* Changed from position to designation */}
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm text-muted-foreground mb-4">

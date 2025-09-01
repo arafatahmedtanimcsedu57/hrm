@@ -13,7 +13,7 @@ interface UserData {
   lastName: string
   email: string
   phone: string
-  position: string
+  designation: string // Changed from position to designation
   department: string
   status: "active" | "inactive"
   createdAt: string
@@ -106,7 +106,7 @@ export default function UserDetailPage() {
                   </CardTitle>
                   <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>
                 </div>
-                <CardDescription>{user.position}</CardDescription>
+                <CardDescription>{user.designation}</CardDescription> {/* Changed from position to designation */}
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -187,8 +187,8 @@ export default function UserDetailPage() {
                     <span className="font-medium capitalize">{user.status}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Position:</span>
-                    <span className="font-medium">{user.position}</span>
+                    <span>Designation:</span> {/* Changed from Position to Designation */}
+                    <span className="font-medium">{user.designation}</span> {/* Changed from position to designation */}
                   </div>
                   <div className="flex justify-between">
                     <span>Department:</span>
