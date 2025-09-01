@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserPlus, ArrowLeft } from "lucide-react"
+import { UserPlus, ArrowLeft, Plus, X } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 interface Designation {
   id: string
@@ -17,6 +18,16 @@ interface Designation {
   description?: string
   level: number
   createdAt: string
+}
+
+interface OrganizationalAssignment {
+  organizationId: string
+  organizationName: string
+  companyIds: string[]
+  departmentIds: string[]
+  divisionIds: string[]
+  sectionIds: string[]
+  subsectionIds: string[]
 }
 
 export default function CreateUserPage() {
@@ -29,14 +40,11 @@ export default function CreateUserPage() {
     email: "",
     phone: "",
     designation: "",
-    department: "",
-    organizationId: "",
-    companyId: "",
-    branchId: "",
-    departmentId: "",
+    assignments: [] as OrganizationalAssignment[],
     status: "active" as "active" | "inactive",
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [currentAssignment, setCurrentAssignment] = useState<Partial<OrganizationalAssignment>>({})
   const router = useRouter()
 
   useEffect(() => {
@@ -89,6 +97,41 @@ export default function CreateUserPage() {
     }))
   }
 
+  const addAssignment = () => {
+    if (currentAssignment.organizationId && currentAssignment.organizationName) {
+      const newAssignment: OrganizationalAssignment = {
+        organizationId: currentAssignment.organizationId,
+        organizationName: currentAssignment.organizationName,
+        companyIds: currentAssignment.companyIds || [],
+        departmentIds: currentAssignment.departmentIds || [],
+        divisionIds: currentAssignment.divisionIds || [],
+        sectionIds: currentAssignment.sectionIds || [],
+        subsectionIds: currentAssignment.subsectionIds || [],
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        assignments: [...prev.assignments, newAssignment],
+      }))
+
+      setCurrentAssignment({})
+    }
+  }
+
+  const removeAssignment = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      assignments: prev.assignments.filter((_, i) => i !== index),
+    }))
+  }
+
+  const handleAssignmentChange = (field: keyof OrganizationalAssignment, value: string | string[]) => {
+    setCurrentAssignment((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -116,11 +159,11 @@ export default function CreateUserPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">New Employee</CardTitle>
-            <CardDescription>Add a new employee to your organization</CardDescription>
+            <CardDescription>Add a new employee with multiple organizational assignments</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -187,7 +230,7 @@ export default function CreateUserPage() {
                     <SelectContent>
                       {designations.length > 0 ? (
                         designations
-                          .sort((a, b) => b.level - a.level) // Sort by level descending (highest first)
+                          .sort((a, b) => b.level - a.level)
                           .map((designation) => (
                             <SelectItem key={designation.id} value={designation.name}>
                               {designation.name} {designation.description && `- ${designation.description}`}
@@ -207,35 +250,6 @@ export default function CreateUserPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    name="department"
-                    placeholder="Enter department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="organizationId">Organization</Label>
-                  <Select onValueChange={(value) => handleSelectChange("organizationId", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {organizations.map((org) => (
-                        <SelectItem key={org.id} value={org.id}>
-                          {org.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <Select onValueChange={(value) => handleSelectChange("status", value)} defaultValue="active">
                     <SelectTrigger>
@@ -246,6 +260,188 @@ export default function CreateUserPage() {
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-lg font-semibold">Organizational Assignments</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Employee can be assigned to multiple organizational units
+                  </p>
+                </div>
+
+                {/* Current Assignments */}
+                {formData.assignments.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Current Assignments:</Label>
+                    <div className="space-y-2">
+                      {formData.assignments.map((assignment, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 border rounded-lg bg-muted/50"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium">{assignment.organizationName}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {assignment.companyIds.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {assignment.companyIds.length} Companies
+                                </Badge>
+                              )}
+                              {assignment.departmentIds.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {assignment.departmentIds.length} Departments
+                                </Badge>
+                              )}
+                              {assignment.divisionIds.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {assignment.divisionIds.length} Divisions
+                                </Badge>
+                              )}
+                              {assignment.sectionIds.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {assignment.sectionIds.length} Sections
+                                </Badge>
+                              )}
+                              {assignment.subsectionIds.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {assignment.subsectionIds.length} Sub-sections
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removeAssignment(index)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add New Assignment */}
+                <div className="border rounded-lg p-4 space-y-4">
+                  <Label className="text-sm font-medium">Add New Assignment:</Label>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Organization *</Label>
+                      <Select
+                        onValueChange={(value) => {
+                          const org = organizations.find((o) => o.id === value)
+                          handleAssignmentChange("organizationId", value)
+                          handleAssignmentChange("organizationName", org?.name || "")
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select organization" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {organizations.map((org) => (
+                            <SelectItem key={org.id} value={org.id}>
+                              {org.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Companies (Multiple)</Label>
+                      <Input
+                        placeholder="Enter company IDs (comma-separated)"
+                        onChange={(e) =>
+                          handleAssignmentChange(
+                            "companyIds",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Departments (Multiple)</Label>
+                      <Input
+                        placeholder="Enter department IDs (comma-separated)"
+                        onChange={(e) =>
+                          handleAssignmentChange(
+                            "departmentIds",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Divisions (Multiple)</Label>
+                      <Input
+                        placeholder="Enter division IDs (comma-separated)"
+                        onChange={(e) =>
+                          handleAssignmentChange(
+                            "divisionIds",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Sections (Multiple)</Label>
+                      <Input
+                        placeholder="Enter section IDs (comma-separated)"
+                        onChange={(e) =>
+                          handleAssignmentChange(
+                            "sectionIds",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Sub-sections (Multiple)</Label>
+                      <Input
+                        placeholder="Enter sub-section IDs (comma-separated)"
+                        onChange={(e) =>
+                          handleAssignmentChange(
+                            "subsectionIds",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addAssignment}
+                    disabled={!currentAssignment.organizationId}
+                    className="w-full bg-transparent"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Assignment
+                  </Button>
                 </div>
               </div>
 
